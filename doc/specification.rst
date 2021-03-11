@@ -424,6 +424,35 @@ GroundTruth Initialization Parameters
    ``fmi2SetInteger`` that provides those values until the end of the following
    ``fmi2ExitInitializationMode`` call.
 
+Motion Request Input
+--------------------
+
+- A motion request input MUST be named with the prefix ``OSMPMotionRequestIn``.
+  *only one motion request input shall be used?*
+  
+- Each motion request input MUST be defined as a notional discrete binary 
+  input variable, as specified above, with ``causality="input"`` and 
+  ``variability="discrete"``.
+
+- The MIME type of the variable MUST specify the ``type=MotionRequest``,
+  e.g. ``application/x-open-simulation-interface; type=MotionRequest; version=3.3.0``.
+  
+- The motion request MUST be encoded as ``osi3::MotionRequest`` (see the
+  OSI specification documentation for more details). (*maybe a link?*)
+   
+- The guaranteed lifetime of the motion request protocol buffer pointer provided as input 
+  to the FMU MUST be from the time of the call to ``fmi2SetInteger`` that provides those 
+  values until the end of the following ``fmi2DoStep`` call, i.e. the agent model can rely 
+  on the provided buffer remaining valid from the moment it is passed in until the end 
+  of the corresponding calculation, and thus does not need to copy the contents in that
+  case (zero copy input).
+  
+- The motion request passed to the FMU MUST contain one of the available ``OutputOptions``.
+  In addition to the enumerator, the corresponding ``DesiredState`` or ``Trajectory`` has to
+  be set, respectively.
+  
+- *Is there a SHOULD condition in the motion request message?*
+
 Traffic Update Outputs
 ----------------------
 
