@@ -453,6 +453,39 @@ Motion Request Input
   
 - *Is there a SHOULD condition in the motion request message?*
 
+Motion Request Output
+--------------------
+
+- A motion request output MUST be named with the prefix ``OSMPMotionRequestOut``.
+  *only one motion request input shall be used?*
+  
+- Each motion request output MUST be defined as a notional discrete binary 
+  input variable, as specified above, with ``causality="output"`` and 
+  ``variability="discrete"``.
+
+- The MIME type of the variable MUST specify the ``type=MotionRequest``,
+  e.g. ``application/x-open-simulation-interface; type=MotionRequest; version=3.3.0``.
+  
+- The motion request MUST be encoded as ``osi3::MotionRequest`` (see the
+  OSI specification documentation for more details). (*maybe a link?*)
+   
+- The guaranteed lifetime of the motion request protocol buffer pointer
+  provided as output by the FMU MUST be from the end of the call to
+  ``fmi2DoStep`` that calculated this buffer until the beginning of the
+  **second** ``fmi2DoStep`` call after that, i.e. the simulation engine
+  can rely on the provided buffer remaining valid from the moment it is
+  passed out until the end of the next Co-Simulation calculation cycle,
+  and thus does not need to copy the contents in that case (zero copy
+  output for the simulation engine, at the cost of double buffering for
+  the sensor model).
+  
+- The motion request passed to the FMU MUST contain one of the available ``OutputOptions``.
+  In addition to the enumerator, the corresponding ``DesiredState`` or ``Trajectory`` has to
+  be set, respectively.
+  
+- *Is there a SHOULD condition in the motion request message?*
+
+
 Traffic Update Outputs
 ----------------------
 
