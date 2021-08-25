@@ -266,8 +266,8 @@ bool insideFoV(double rel_x, double rel_y, double rel_z, double distance)
     double lrange_fov = 6;
     
     // Calculations 
-    double rel_yaw = atan2(rel_y,rel_x) * 180/3.14;
-    double rel_pitch = asin(rel_z/distance) * 180/3.14;
+    double rel_yaw = (atan2(rel_y,rel_x) * 180/3.14) - 90;
+    double rel_pitch = asin(rel_z/distance) * 180/3.14; // Not using the pitch as any filter requirements atm
 
     // Criteria
     if (distance < lrange_dist_thresh){

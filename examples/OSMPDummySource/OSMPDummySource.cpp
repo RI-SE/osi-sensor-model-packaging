@@ -186,7 +186,7 @@ void rotatePoint(double x, double y, double z,double yaw,double pitch,double rol
 fmi2Status COSMPDummySource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint)
 {
     DEBUGBREAK();
-
+    bool debug = true;
     osi3::SensorView currentOut;
     double time = currentCommunicationPoint+communicationStepSize;
 
@@ -220,34 +220,73 @@ fmi2Status COSMPDummySource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
     currentGT->mutable_host_vehicle_id()->set_value(14);
 
     // Vehicles
-    for (unsigned int i=0;i<10;i++) {
-        osi3::MovingObject *veh = currentGT->add_moving_object();
-        veh->mutable_id()->set_value(10+i);
-        veh->set_type(osi3::MovingObject_Type_TYPE_VEHICLE);
-        auto vehclass = veh->mutable_vehicle_classification();
-        vehclass->set_type(source_veh_types[i]);
-        auto vehlights = vehclass->mutable_light_state();
-        vehlights->set_indicator_state(osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_OFF);
-        vehlights->set_brake_light_state(osi3::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_OFF);
-        veh->mutable_base()->mutable_dimension()->set_height(1.5);
-        veh->mutable_base()->mutable_dimension()->set_width(2.0);
-        veh->mutable_base()->mutable_dimension()->set_length(5.0);
-        veh->mutable_base()->mutable_position()->set_x(source_x_offsets[i]+time*source_x_speeds[i]);
-        veh->mutable_base()->mutable_position()->set_y(source_y_offsets[i]+sin(time/source_x_speeds[i])*0.25);
-        veh->mutable_base()->mutable_position()->set_z(0.0);
-        veh->mutable_base()->mutable_velocity()->set_x(source_x_speeds[i]);
-        veh->mutable_base()->mutable_velocity()->set_y(cos(time/source_x_speeds[i])*0.25/source_x_speeds[i]);
-        veh->mutable_base()->mutable_velocity()->set_z(0.0);
-        veh->mutable_base()->mutable_acceleration()->set_x(0.0);
-        veh->mutable_base()->mutable_acceleration()->set_y(-sin(time/source_x_speeds[i])*0.25/(source_x_speeds[i]*source_x_speeds[i]));
-        veh->mutable_base()->mutable_acceleration()->set_z(0.0);
-        veh->mutable_base()->mutable_orientation()->set_pitch(0.0);
-        veh->mutable_base()->mutable_orientation()->set_roll(0.0);
-        veh->mutable_base()->mutable_orientation()->set_yaw(0.0);
-        veh->mutable_base()->mutable_orientation_rate()->set_pitch(0.0);
-        veh->mutable_base()->mutable_orientation_rate()->set_roll(0.0);
-        veh->mutable_base()->mutable_orientation_rate()->set_yaw(0.0);
-        normal_log("OSI","GT: Adding Vehicle %d[%llu] Absolute Position: %f,%f,%f Velocity (%f,%f,%f)",i,veh->id().value(),veh->base().position().x(),veh->base().position().y(),veh->base().position().z(),veh->base().velocity().x(),veh->base().velocity().y(),veh->base().velocity().z());
+
+    if (!debug){
+        for (unsigned int i=0;i<10;i++) {
+            osi3::MovingObject *veh = currentGT->add_moving_object();
+            veh->mutable_id()->set_value(10+i);
+            veh->set_type(osi3::MovingObject_Type_TYPE_VEHICLE);
+            auto vehclass = veh->mutable_vehicle_classification();
+            vehclass->set_type(source_veh_types[i]);
+            auto vehlights = vehclass->mutable_light_state();
+            vehlights->set_indicator_state(osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_OFF);
+            vehlights->set_brake_light_state(osi3::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_OFF);
+            veh->mutable_base()->mutable_dimension()->set_height(1.5);
+            veh->mutable_base()->mutable_dimension()->set_width(2.0);
+            veh->mutable_base()->mutable_dimension()->set_length(5.0);
+            veh->mutable_base()->mutable_position()->set_x(source_x_offsets[i]+time*source_x_speeds[i]);
+            veh->mutable_base()->mutable_position()->set_y(source_y_offsets[i]+sin(time/source_x_speeds[i])*0.25);
+            veh->mutable_base()->mutable_position()->set_z(0.0);
+            veh->mutable_base()->mutable_velocity()->set_x(source_x_speeds[i]);
+            veh->mutable_base()->mutable_velocity()->set_y(cos(time/source_x_speeds[i])*0.25/source_x_speeds[i]);
+            veh->mutable_base()->mutable_velocity()->set_z(0.0);
+            veh->mutable_base()->mutable_acceleration()->set_x(0.0);
+            veh->mutable_base()->mutable_acceleration()->set_y(-sin(time/source_x_speeds[i])*0.25/(source_x_speeds[i]*source_x_speeds[i]));
+            veh->mutable_base()->mutable_acceleration()->set_z(0.0);
+            veh->mutable_base()->mutable_orientation()->set_pitch(0.0);
+            veh->mutable_base()->mutable_orientation()->set_roll(0.0);
+            veh->mutable_base()->mutable_orientation()->set_yaw(0.0);
+            veh->mutable_base()->mutable_orientation_rate()->set_pitch(0.0);
+            veh->mutable_base()->mutable_orientation_rate()->set_roll(0.0);
+            veh->mutable_base()->mutable_orientation_rate()->set_yaw(0.0);
+            normal_log("OSI","GT: Adding Vehicle %d[%llu] Absolute Position: %f,%f,%f Velocity (%f,%f,%f)",i,veh->id().value(),veh->base().position().x(),veh->base().position().y(),veh->base().position().z(),veh->base().velocity().x(),veh->base().velocity().y(),veh->base().velocity().z());
+        }
+    }
+    else {
+        // Hardcoding objects for testing purposes 
+        // (0,0) = Ego, (1,140) = Detected , (5,15) = Detected, (-3,21) = Undetected, (-10,130) = Detected, (11,100) = Undetected
+        static double hardcoded_x_pos[6] = {0,1,5,-3,-10,11};
+        static double hardcoded_y_pos[6] = {0,140,15,21,130,100};
+
+        for (unsigned int i=0;i<6;i++) {
+            osi3::MovingObject *veh = currentGT->add_moving_object();
+            veh->mutable_id()->set_value(14+i);
+            veh->set_type(osi3::MovingObject_Type_TYPE_VEHICLE);
+            auto vehclass = veh->mutable_vehicle_classification();
+            vehclass->set_type(source_veh_types[0]);
+            auto vehlights = vehclass->mutable_light_state();
+            vehlights->set_indicator_state(osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_OFF);
+            vehlights->set_brake_light_state(osi3::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_OFF);
+            veh->mutable_base()->mutable_dimension()->set_height(1.5);
+            veh->mutable_base()->mutable_dimension()->set_width(2.0);
+            veh->mutable_base()->mutable_dimension()->set_length(5.0);
+            veh->mutable_base()->mutable_position()->set_x(hardcoded_x_pos[i]);
+            veh->mutable_base()->mutable_position()->set_y(hardcoded_y_pos[i]);
+            veh->mutable_base()->mutable_position()->set_z(0.0);
+            veh->mutable_base()->mutable_velocity()->set_x(0.0);
+            veh->mutable_base()->mutable_velocity()->set_y(0.0);
+            veh->mutable_base()->mutable_velocity()->set_z(0.0);
+            veh->mutable_base()->mutable_acceleration()->set_x(0.0);
+            veh->mutable_base()->mutable_acceleration()->set_y(0.0);
+            veh->mutable_base()->mutable_acceleration()->set_z(0.0);
+            veh->mutable_base()->mutable_orientation()->set_pitch(0.0);
+            veh->mutable_base()->mutable_orientation()->set_roll(0.0);
+            veh->mutable_base()->mutable_orientation()->set_yaw(0.0);
+            veh->mutable_base()->mutable_orientation_rate()->set_pitch(0.0);
+            veh->mutable_base()->mutable_orientation_rate()->set_roll(0.0);
+            veh->mutable_base()->mutable_orientation_rate()->set_yaw(0.0);
+            normal_log("OSI","GT: Adding Vehicle %d[%llu] Absolute Position: %f,%f,%f Velocity (%f,%f,%f)",i,veh->id().value(),veh->base().position().x(),veh->base().position().y(),veh->base().position().z(),veh->base().velocity().x(),veh->base().velocity().y(),veh->base().velocity().z());
+        }    
     }
 
     set_fmi_sensor_view_out(currentOut);
