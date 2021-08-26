@@ -261,26 +261,26 @@ bool insideFoV(double rel_x, double rel_y, double rel_z, double distance)
     // distance threshold (meters)
     double srange_dist_thresh = 20;
     double lrange_dist_thresh = 150;
-    // fov (yaw) threshold (degrees)
+    // fov (yaw) threshold ( +-degrees) 
     double srange_fov = 45;
     double lrange_fov = 6;
     
     // Calculations 
-    double rel_yaw = (atan2(rel_y,rel_x) * 180/3.14) - 90;
-    double rel_pitch = asin(rel_z/distance) * 180/3.14; // Not using the pitch as any filter requirements atm
+    double rel_yaw = (atan2(rel_y,rel_x) * 180/3.14) - 90;  // Compensation 90 degrees due to tangent function
+    double rel_pitch = asin(rel_z/distance) * 180/3.14;     // Not using the pitch as any filter requirements atm
 
     // Criteria
-    if (distance < lrange_dist_thresh){
+    if (distance < lrange_dist_thresh){      // Within range   
         if (distance < srange_dist_thresh) { // Within small range
-            if (abs(rel_yaw) < srange_fov) {
+            if (abs(rel_yaw) < srange_fov) { // Within FoV
                 return true;
             }
             else {
                 return false;
             }
         }
-        else { // Within long range
-            if (abs(rel_yaw) < lrange_fov) {
+        else {                               // Within long range
+            if (abs(rel_yaw) < lrange_fov) { // Within FoV
                 return true;
             }
             else {
@@ -288,7 +288,7 @@ bool insideFoV(double rel_x, double rel_y, double rel_z, double distance)
             }
         }
     }
-    else{ // outside range 
+    else{ // Outside range 
         return false;
     }
 }
