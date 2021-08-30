@@ -256,6 +256,14 @@ void rotatePoint(double x, double y, double z,double yaw,double pitch,double rol
 
 }
 
+/*!
+     * \brief Field of view filter for Low-fid sensor model. Returns true if target object is inside specified FoV.  
+     * \param rel_x Relative x-coordinate to target.
+     * \param rel_y Relative y-coordinate to target.
+     * \param rel_z Relative z-coordinate to target.
+     * \param distance Distance to target.
+     * \return true/false if object is inside FoV.
+     */
 bool insideFoV(double rel_x, double rel_y, double rel_z, double distance)
 {   
     // distance threshold (meters)

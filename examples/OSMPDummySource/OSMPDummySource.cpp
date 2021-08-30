@@ -220,8 +220,7 @@ fmi2Status COSMPDummySource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
     currentGT->mutable_host_vehicle_id()->set_value(14);
 
     // Vehicles
-
-    if (!debug){
+    if (!debug){ // Regular section that creates dynamic objects that moves according to GT source above. 
         for (unsigned int i=0;i<10;i++) {
             osi3::MovingObject *veh = currentGT->add_moving_object();
             veh->mutable_id()->set_value(10+i);
@@ -252,8 +251,8 @@ fmi2Status COSMPDummySource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
             normal_log("OSI","GT: Adding Vehicle %d[%llu] Absolute Position: %f,%f,%f Velocity (%f,%f,%f)",i,veh->id().value(),veh->base().position().x(),veh->base().position().y(),veh->base().position().z(),veh->base().velocity().x(),veh->base().velocity().y(),veh->base().velocity().z());
         }
     }
-    else {
-        // Hardcoding objects for testing purposes 
+    else { 
+        // Hardcoding objects for our own testing purposes. Objects could be received by dummy_sensor and go through the insideFoV filter to see if they are detected or not 
         // (0,0) = Ego, (1,140) = Detected , (5,15) = Detected, (-3,21) = Undetected, (-10,130) = Detected, (11,100) = Undetected
         static double hardcoded_x_pos[6] = {0,1,5,-3,-10,11};
         static double hardcoded_y_pos[6] = {0,140,15,21,130,100};
