@@ -253,6 +253,52 @@ void rotatePoint(double x, double y, double z,double yaw,double pitch,double rol
     rx = matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z;
     ry = matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z;
     rz = matrix[2][0] * x + matrix[2][1] * y + matrix[2][2] * z;
+
+}
+
+/*!
+     * \brief Field of view filter for Low-fid sensor model. Returns true if target object is inside specified FoV.  
+     * \param rel_x Relative x-coordinate to target.
+     * \param rel_y Relative y-coordinate to target.
+     * \param rel_z Relative z-coordinate to target.
+     * \param distance Distance to target.
+     * \return true/false if object is inside FoV.
+     */
+bool insideFoV(double rel_x, double rel_y, double rel_z, double distance)
+{   
+    // distance threshold (meters)
+    double srange_dist_thresh = 20;
+    double lrange_dist_thresh = 150;
+    // fov (yaw) threshold ( +-degrees) 
+    double srange_fov = 45;
+    double lrange_fov = 6;
+    
+    // Calculations 
+    double rel_yaw = (atan2(rel_y,rel_x) * 180/3.14) - 90;  // Compensation 90 degrees due to tangent function
+    double rel_pitch = asin(rel_z/distance) * 180/3.14;     // Not using the pitch as any filter requirements atm
+
+    // Criteria
+    if (distance < lrange_dist_thresh){      // Within range   
+        if (distance < srange_dist_thresh) { // Within small range
+            if (abs(rel_yaw) < srange_fov) { // Within FoV
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {                               // Within long range
+            if (abs(rel_yaw) < lrange_fov) { // Within FoV
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+    else{ // Outside range 
+        return false;
+    }
 }
 
 fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint)
@@ -302,7 +348,7 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
                     double rel_x,rel_y,rel_z;
                     rotatePoint(trans_x,trans_y,trans_z,veh.base().orientation().yaw(),veh.base().orientation().pitch(),veh.base().orientation().roll(),rel_x,rel_y,rel_z);
                     double distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z);
-                    if ((distance <= actual_range) && (rel_x/distance > 0.866025)) {
+                    if (insideFoV(rel_x,rel_y, rel_z, distance)) {
                         osi3::DetectedMovingObject *obj = currentOut.mutable_moving_object()->Add();
                         obj->mutable_header()->add_ground_truth_id()->CopyFrom(veh.id());
                         obj->mutable_header()->mutable_tracking_id()->set_value(i);
