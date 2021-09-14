@@ -41,6 +41,10 @@ using namespace std;
  * array variables.
  */
 
+/* Logging Variables */
+#define PRIVATE_LOG_PATH "/home/simdator/Documents/MATLAB/FMU_OSI/FMU_logs/FMU_sensor_log.txt"
+#define PUBLIC_LOGGING True
+
 /* Boolean Variables */
 #define FMI_BOOLEAN_VALID_IDX 0
 #define FMI_BOOLEAN_LAST_IDX FMI_BOOLEAN_VALID_IDX
