@@ -381,6 +381,7 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
                         obj->mutable_base()->mutable_position()->set_x(rel_x);
                         obj->mutable_base()->mutable_position()->set_y(rel_y);
                         obj->mutable_base()->mutable_position()->set_z(rel_z);
+                        obj->mutable_base()->mutable_orientation()->set_yaw(rel_yaw);
                         obj->mutable_base()->mutable_dimension()->set_length(veh.base().dimension().length());
                         obj->mutable_base()->mutable_dimension()->set_width(veh.base().dimension().width());
                         obj->mutable_base()->mutable_dimension()->set_height(veh.base().dimension().height());

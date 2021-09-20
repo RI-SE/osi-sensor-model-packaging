@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(OSMPCNetworkProxy)
 
-set(PUBLIC_LOGGING OFF CACHE BOOL "Enable logging via FMI logger")
+set(PUBLIC_LOGGING ON CACHE BOOL "Enable logging via FMI logger")
 set(PRIVATE_LOGGING OFF CACHE BOOL "Enable private logging to file")
 if(WIN32)
 	set(PRIVATE_LOG_PATH_CPROXY "C:/TEMP/OSMPCNetworkProxyLog.log" CACHE FILEPATH "Path to write private log file to")
