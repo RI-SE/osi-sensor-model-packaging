@@ -280,7 +280,6 @@ void rotatePoint3D(double x, double y, double z,double yaw,double pitch,double r
      */
 void rotatePoint2D(double x, double y, double yaw, double &rx, double &ry, double &ryaw)
 {
-    double matrix[2][2];
     double cos_yaw = cos(yaw * 3.14/180);
     double sin_yaw = sin(yaw * 3.14/180);
 
@@ -378,9 +377,9 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
                     double trans_x = veh.base().position().x()-ego_x;
                     double trans_y = veh.base().position().y()-ego_y;
                     double trans_z = veh.base().position().z()-ego_z;
-                    double trans_yaw = ego_yaw;
                     double rel_x,rel_y,rel_z,rel_yaw;
-                    rotatePoint2D(trans_x, trans_y, trans_yaw, rel_x, rel_y, rel_yaw);
+                    rotatePoint2D(trans_x, trans_y, ego_yaw, rel_x, rel_y, rel_yaw);
+
                     double distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z);
                     double trans_distance = sqrt(trans_x*trans_x + trans_y*trans_y + trans_z*trans_z);
                     if (insideFoV(distance,rel_yaw)) {
@@ -404,7 +403,8 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
                         candidate->set_probability(1);
                         
                         normal_log("OSI", "Detected vehicle! Relative Position: %f,%f,%f, Relative distance: %f, Relative Yaw: %f", rel_x, rel_y, rel_z, distance, rel_yaw);
-                        normal_log("OSI", "Unrotated - Relative Position %f,%f,%f, Relative distance: %f, Ego Yaw: %f", trans_x,trans_y,trans_z,trans_distance,trans_yaw);
+                        normal_log("OSI", "Unrotated - Relative Position %f,%f,%f, Relative distance: %f, Ego Yaw: %f", trans_x,trans_y,trans_z,trans_distance,ego_yaw);
+
                         normal_log("OSI","Output Vehicle %d[%llu] Probability %f Relative Position: %f,%f,%f (%f,%f,%f)",i,veh.id().value(),obj->header().existence_probability(),rel_x,rel_y,rel_z,obj->base().position().x(),obj->base().position().y(),obj->base().position().z());
                         i++;
                     } else {
