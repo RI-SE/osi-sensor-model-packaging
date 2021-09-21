@@ -104,7 +104,7 @@ bool COSMPDummySensor::get_fmi_sensor_view_config(osi3::SensorViewConfiguration&
 {
     if (integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_SIZE_IDX] > 0) {
         void* buffer = decode_integer_to_pointer(integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_BASELO_IDX]);
-        //normal_log("OSMP","Got %08X %08X, reading from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_BASELO_IDX],buffer);
+        normal_log("OSMP","Got %08X %08X, reading from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_BASELO_IDX],buffer);
         data.ParseFromArray(buffer,integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_SIZE_IDX]);
         return true;
     } else {
@@ -117,7 +117,7 @@ void COSMPDummySensor::set_fmi_sensor_view_config_request(const osi3::SensorView
     data.SerializeToString(currentConfigRequestBuffer);
     encode_pointer_to_integer(currentConfigRequestBuffer->data(),integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASELO_IDX]);
     integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_SIZE_IDX]=(fmi2Integer)currentConfigRequestBuffer->length();
-    //normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASELO_IDX],currentConfigRequestBuffer->data());
+    normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASELO_IDX],currentConfigRequestBuffer->data());
     swap(currentConfigRequestBuffer,lastConfigRequestBuffer);
 }
 
@@ -132,7 +132,7 @@ bool COSMPDummySensor::get_fmi_sensor_view_in(osi3::SensorView& data)
 {
     if (integer_vars[FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX] > 0) {
         void* buffer = decode_integer_to_pointer(integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX]);
-        //normal_log("OSMP","Got %08X %08X, reading from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX],buffer);
+        normal_log("OSMP","Got %08X %08X, reading from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX],buffer);
         data.ParseFromArray(buffer,integer_vars[FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX]);
         return true;
     } else {
@@ -145,7 +145,7 @@ void COSMPDummySensor::set_fmi_sensor_data_out(const osi3::SensorData& data)
     data.SerializeToString(currentOutputBuffer);
     encode_pointer_to_integer(currentOutputBuffer->data(),integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX]);
     integer_vars[FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX]=(fmi2Integer)currentOutputBuffer->length();
-    //normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX],currentOutputBuffer->data());
+    normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX],currentOutputBuffer->data());
     swap(currentOutputBuffer,lastOutputBuffer);
 }
 
@@ -236,8 +236,20 @@ fmi2Status COSMPDummySensor::doExitInitializationMode()
     return fmi2OK;
 }
 
-// TODO: Find out why 3D rotation doesn't work. Using 2D rotation instead. 
-void rotatePoint3D(double x, double y, double z,double yaw,double pitch,double roll,double &rx,double &ry,double &rz)
+
+/*!
+     * \brief 3D rotation matrix function. Calculates local X,Y,Z coordinates relative from reference.  
+     * \param x Global relative x-coordinate.
+     * \param y Global relative y-coordinate.
+     * \param z Global relative z-coordinate
+     * \param yaw Global yaw reference of rotation.
+     * \param pitch Global pitch reference of rotation.
+     * \param roll Global roll reference of rotation.
+     * \param rx Local x-coordinate after rotation. 
+     * \param ry Local y-coordinate after rotation.
+     * \param rz Local z-coordinate after rotation.
+     */ 
+void rotatePoint3D(double x, double y, double z,double yaw,double pitch,double roll,double &rx,double &ry,double &rz) // TODO: Find out why 3D rotation doesn't work. Using 2D rotation instead.
 {
     double matrix[3][3];
     double cos_yaw = cos(yaw*3.14/180);
@@ -326,16 +338,16 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
     osi3::SensorView currentIn;
     osi3::SensorData currentOut;
     double time = currentCommunicationPoint+communicationStepSize;
-    //normal_log("OSI","Calculating Sensor at %f for %f (step size %f)",currentCommunicationPoint,time,communicationStepSize);
+    normal_log("OSI","Calculating Sensor at %f for %f (step size %f)",currentCommunicationPoint,time,communicationStepSize);
     if (get_fmi_sensor_view_in(currentIn)) {
         double ego_x=0, ego_y=0, ego_z=0, ego_yaw=0, ego_pitch=0, ego_roll=0;
         osi3::Identifier ego_id = currentIn.global_ground_truth().host_vehicle_id();
-        //normal_log("OSI","Looking for EgoVehicle with ID: %llu",ego_id.value());
+        normal_log("OSI","Looking for EgoVehicle with ID: %llu",ego_id.value());
         for_each(currentIn.global_ground_truth().moving_object().begin(),currentIn.global_ground_truth().moving_object().end(),
             [this, ego_id, &ego_x, &ego_y, &ego_z, &ego_yaw, &ego_pitch, &ego_roll](const osi3::MovingObject& obj) {
-                //normal_log("OSI","MovingObject with ID %llu is EgoVehicle: %d",obj.id().value(), obj.id().value() == ego_id.value());
+                normal_log("OSI","MovingObject with ID %llu is EgoVehicle: %d",obj.id().value(), obj.id().value() == ego_id.value());
                 if (obj.id().value() == ego_id.value()) {
-                    //normal_log("OSI","Found EgoVehicle with ID: %llu",obj.id().value());
+                    normal_log("OSI","Found EgoVehicle with ID: %llu",obj.id().value());
                     ego_x = obj.base().position().x();
                     ego_y = obj.base().position().y();
                     ego_z = obj.base().position().z();
@@ -344,7 +356,7 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
                     ego_roll = obj.base().orientation().roll();
                 }
             });
-        //normal_log("OSI","Current Ego Position: %f,%f,%f", ego_x, ego_y, ego_z);
+        normal_log("OSI","Current Ego Position: %f,%f,%f", ego_x, ego_y, ego_z);
 
         /* Clear Output */
         currentOut.Clear();
@@ -392,26 +404,26 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
                         candidate->set_probability(1);
                         
                         normal_log("OSI", "Detected vehicle! Relative Position: %f,%f,%f, Relative distance: %f, Relative Yaw: %f", rel_x, rel_y, rel_z, distance, rel_yaw);
-                        //normal_log("OSI", "Unrotated - Relative Position %f,%f,%f, Relative distance: %f, Ego Yaw: %f", trans_x,trans_y,trans_z,trans_distance,trans_yaw);
-                        //normal_log("OSI","Output Vehicle %d[%llu] Probability %f Relative Position: %f,%f,%f (%f,%f,%f)",i,veh.id().value(),obj->header().existence_probability(),rel_x,rel_y,rel_z,obj->base().position().x(),obj->base().position().y(),obj->base().position().z());
+                        normal_log("OSI", "Unrotated - Relative Position %f,%f,%f, Relative distance: %f, Ego Yaw: %f", trans_x,trans_y,trans_z,trans_distance,trans_yaw);
+                        normal_log("OSI","Output Vehicle %d[%llu] Probability %f Relative Position: %f,%f,%f (%f,%f,%f)",i,veh.id().value(),obj->header().existence_probability(),rel_x,rel_y,rel_z,obj->base().position().x(),obj->base().position().y(),obj->base().position().z());
                         i++;
                     } else {
-                        //normal_log("OSI","Ignoring Vehicle %d[%llu] Outside Sensor Scope Relative Position: %f,%f,%f (%f,%f,%f)",i,veh.id().value(),veh.base().position().x()-ego_x,veh.base().position().y()-ego_y,veh.base().position().z()-ego_z,veh.base().position().x(),veh.base().position().y(),veh.base().position().z());
+                        normal_log("OSI","Ignoring Vehicle %d[%llu] Outside Sensor Scope Relative Position: %f,%f,%f (%f,%f,%f)",i,veh.id().value(),veh.base().position().x()-ego_x,veh.base().position().y()-ego_y,veh.base().position().z()-ego_z,veh.base().position().x(),veh.base().position().y(),veh.base().position().z());
                     }
                 }
                 else
                 {
-                    //normal_log("OSI","Ignoring EGO Vehicle %d[%llu] Relative Position: %f,%f,%f (%f,%f,%f)",i,veh.id().value(),veh.base().position().x()-ego_x,veh.base().position().y()-ego_y,veh.base().position().z()-ego_z,veh.base().position().x(),veh.base().position().y(),veh.base().position().z());
+                    normal_log("OSI","Ignoring EGO Vehicle %d[%llu] Relative Position: %f,%f,%f (%f,%f,%f)",i,veh.id().value(),veh.base().position().x()-ego_x,veh.base().position().y()-ego_y,veh.base().position().z()-ego_z,veh.base().position().x(),veh.base().position().y(),veh.base().position().z());
                 }
             });
-        //normal_log("OSI","Mapped %d vehicles to output", i);
+        normal_log("OSI","Mapped %d vehicles to output", i);
         /* Serialize */
         set_fmi_sensor_data_out(currentOut);
         set_fmi_valid(true);
         set_fmi_count(currentOut.moving_object_size());
     } else {
         /* We have no valid input, so no valid output */
-        //normal_log("OSI","No valid input, therefore providing no valid output.");
+        normal_log("OSI","No valid input, therefore providing no valid output.");
         reset_fmi_sensor_data_out();
         set_fmi_valid(false);
         set_fmi_count(0);
