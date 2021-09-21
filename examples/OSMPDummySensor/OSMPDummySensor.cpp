@@ -291,10 +291,8 @@ void rotatePoint2D(double x, double y, double yaw, double &rx, double &ry, doubl
 
 /*!
      * \brief Field of view filter for Low-fid sensor model. Returns true if target object is inside specified FoV.  
-     * \param rel_x Relative x-coordinate to target.
-     * \param rel_y Relative y-coordinate to target.
-     * \param rel_z Relative z-coordinate to target.
-     * \param distance Distance to target.
+     * \param distance Distance (m) to target.
+     * \param rel_yaw Relative yaw angle (degrees) to target. 
      * \return true/false if object is inside FoV.
      */
 bool insideFoV(double distance, double rel_yaw)
