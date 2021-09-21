@@ -252,12 +252,12 @@ fmi2Status COSMPDummySensor::doExitInitializationMode()
 void rotatePoint3D(double x, double y, double z,double yaw,double pitch,double roll,double &rx,double &ry,double &rz) // TODO: Find out why 3D rotation doesn't work. Using 2D rotation instead.
 {
     double matrix[3][3];
-    double cos_yaw = cos(yaw*3.14/180);
-    double cos_pitch = cos(pitch*3.14/180);
-    double cos_roll = cos(roll*3.14/180);
-    double sin_yaw = sin(yaw*3.14/180);
-    double sin_pitch = sin(pitch*3.14/180);
-    double sin_roll = sin(roll*3.14/180);
+    double cos_yaw = cos(yaw*M_PI/180);
+    double cos_pitch = cos(pitch*M_PI/180);
+    double cos_roll = cos(roll*M_PI/180);
+    double sin_yaw = sin(yaw*M_PI/180);
+    double sin_pitch = sin(pitch*M_PI/180);
+    double sin_roll = sin(roll*M_PI/180);
 
     matrix[0][0] = cos_yaw*cos_pitch;  matrix[0][1]=cos_yaw*sin_pitch*sin_roll - sin_yaw*cos_roll; matrix[0][2]=cos_yaw*sin_pitch*cos_roll + sin_yaw*sin_roll;
     matrix[1][0] = sin_yaw*cos_pitch;  matrix[1][1]=sin_yaw*sin_pitch*sin_roll + cos_yaw*cos_roll; matrix[1][2]=sin_yaw*sin_pitch*cos_roll - cos_yaw*sin_roll;
@@ -280,13 +280,13 @@ void rotatePoint3D(double x, double y, double z,double yaw,double pitch,double r
      */
 void rotatePoint2D(double x, double y, double yaw, double &rx, double &ry, double &ryaw)
 {
-    double cos_yaw = cos(yaw * 3.14/180);
-    double sin_yaw = sin(yaw * 3.14/180);
+    double cos_yaw = cos(yaw * M_PI/180);
+    double sin_yaw = sin(yaw * M_PI/180);
 
     rx = cos_yaw*x + sin_yaw*y;
     ry = -sin_yaw*x + cos_yaw*y; 
 
-    ryaw = (atan2(ry,rx) * 180/3.14);
+    ryaw = (atan2(ry,rx) * 180/M_PI);
 }
 
 /*!
