@@ -358,13 +358,13 @@ bool insideFoV(double distance, double rel_yaw)
     }
 }
 
-bool activateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw)
+bool COSMPDummyFunction::activateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw)
 {
     if (rel_vx >= 0){
         return false;
     }
 
-    double rel_distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z);
+    double rel_distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z) - 4.5;
     double rel_v = sqrt(rel_vx*rel_vx + rel_vy*rel_vy + rel_vz*rel_vz);
 
     double ttc = rel_distance / rel_v;
@@ -372,7 +372,9 @@ bool activateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, do
     double TTClimit = 1.5;
     double collisionWidth = 1.0 ;
 
-    if (ttc< TTClimit && rel_y < collisionWidth){
+    normal_log("OSI","Calculating TTC: %f,  at Distance: %f, for velocity: %f",ttc,rel_distance,rel_v);
+
+    if (ttc< TTClimit && abs(rel_y) < collisionWidth){
         return true;
     }
     else {
@@ -387,13 +389,22 @@ fmi2Status COSMPDummyFunction::doCalc(fmi2Real currentCommunicationPoint, fmi2Re
     osi3::SensorData currentIn;
     osi3::TrafficUpdate currentOut;
     double time = currentCommunicationPoint+communicationStepSize;
-    normal_log("OSI","Calculating Sensor at %f for %f (step size %f)",currentCommunicationPoint,time,communicationStepSize);
+    normal_log("OSI","Calculating Function at %f for %f (step size %f)",currentCommunicationPoint,time,communicationStepSize);
     if (get_fmi_sensor_data_in(currentIn)) {
         
-        // Get the ego information needed. Only ID for now but if function requires more input in the future it can be added here 
         int sv_size = currentIn.sensor_view_size();
-        osi3::Identifier ego_id = currentIn.sensor_view().Get(sv_size-1).host_vehicle_id();
+        normal_log("OSI","Getting %i Sensorview from SensorData",sv_size);
+        if (sv_size < 1) {
+            normal_log("OSI", "No Sensorview data to calculate ego available");
+            return fmi2OK;
+        }
+        // Get the simulation information needed about ego. 
+        // Only ID and timestamp for now but if function requires more input in the future it can be added here.
+        osi3::Identifier ego_id = currentIn.sensor_view().Get(0).global_ground_truth().host_vehicle_id();
         normal_log("OSI","Getting SensorData from hostvehicle with ID: %llu",ego_id.value());
+        osi3::Timestamp stamp = currentIn.sensor_view().Get(0).global_ground_truth().timestamp();
+        double stamp_s = stamp.seconds() + (stamp.nanos()/1000000000.0);
+        normal_log("OSI", "Getting simulation timestamp: %f", stamp_s);
 
         /* Clear Output */
         currentOut.Clear();

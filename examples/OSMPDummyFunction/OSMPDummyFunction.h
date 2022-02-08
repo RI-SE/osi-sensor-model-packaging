@@ -238,4 +238,6 @@ protected:
 
     /* Refreshing of Calculated Parameters */
     void refresh_fmi_sensor_view_config_request();
+
+    bool activateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw);
 };
