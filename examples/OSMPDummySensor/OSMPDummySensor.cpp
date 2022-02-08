@@ -337,17 +337,21 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
     double time = currentCommunicationPoint+communicationStepSize;
     normal_log("OSI","Calculating Sensor at %f for %f (step size %f)",currentCommunicationPoint,time,communicationStepSize);
     if (get_fmi_sensor_view_in(currentIn)) {
-        double ego_x=0, ego_y=0, ego_z=0, ego_yaw=0, ego_pitch=0, ego_roll=0;
+        double ego_x=0, ego_y=0, ego_z=0, ego_vx=0, ego_vy=0 ,ego_yaw=0, ego_pitch=0, ego_roll=0;
         osi3::Identifier ego_id = currentIn.global_ground_truth().host_vehicle_id();
         normal_log("OSI","Looking for EgoVehicle with ID: %llu",ego_id.value());
         for_each(currentIn.global_ground_truth().moving_object().begin(),currentIn.global_ground_truth().moving_object().end(),
-            [this, ego_id, &ego_x, &ego_y, &ego_z, &ego_yaw, &ego_pitch, &ego_roll](const osi3::MovingObject& obj) {
+            [this, ego_id, &ego_x, &ego_y, &ego_z, &ego_vx, &ego_vy, &ego_yaw, &ego_pitch, &ego_roll](const osi3::MovingObject& obj) {
                 normal_log("OSI","MovingObject with ID %llu is EgoVehicle: %d",obj.id().value(), obj.id().value() == ego_id.value());
                 if (obj.id().value() == ego_id.value()) {
                     normal_log("OSI","Found EgoVehicle with ID: %llu",obj.id().value());
                     ego_x = obj.base().position().x();
                     ego_y = obj.base().position().y();
                     ego_z = obj.base().position().z();
+                    
+                    ego_vx = obj.base().velocity().x();
+                    ego_vy = obj.base().velocity().y();
+
                     ego_yaw = obj.base().orientation().yaw();
                     ego_pitch = obj.base().orientation().pitch();
                     ego_roll = obj.base().orientation().roll();
@@ -367,7 +371,7 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
         int i=0;
         double actual_range = fmi_nominal_range()*1.1;
         for_each(currentIn.global_ground_truth().moving_object().begin(),currentIn.global_ground_truth().moving_object().end(),
-            [this,&i,&currentIn,&currentOut,ego_id,ego_x,ego_y,ego_z,ego_yaw,ego_pitch,ego_roll,actual_range](const osi3::MovingObject& veh) {
+            [this,&i,&currentIn,&currentOut,ego_id,ego_x,ego_y,ego_z,ego_vx,ego_vy,ego_yaw,ego_pitch,ego_roll,actual_range](const osi3::MovingObject& veh) {
                 if (veh.id().value() != ego_id.value()) {
                     // NOTE: We currently do not take sensor mounting position into account,
                     // i.e. sensor-relative coordinates are relative to center of bounding box
@@ -375,8 +379,14 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
                     double trans_x = veh.base().position().x()-ego_x;
                     double trans_y = veh.base().position().y()-ego_y;
                     double trans_z = veh.base().position().z()-ego_z;
-                    double rel_x,rel_y,rel_z,rel_yaw;
+
+                    double trans_vx = veh.base().velocity().x() - ego_vx;
+                    double trans_vy = veh.base().velocity().y() - ego_vy;
+
+                    double rel_x,rel_y,rel_z,rel_vx,rel_vy,rel_vz,rel_yaw, dummy;
+
                     rotatePoint2D(trans_x, trans_y, ego_yaw, rel_x, rel_y, rel_yaw);
+                    rotatePoint2D(trans_vx, trans_vy, ego_yaw, rel_vx, rel_vy, dummy);
 
                     double distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z);
                     double trans_distance = sqrt(trans_x*trans_x + trans_y*trans_y + trans_z*trans_z);
@@ -387,10 +397,17 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
                         obj->mutable_header()->set_existence_probability(cos((2.0*distance-actual_range)/actual_range));
                         obj->mutable_header()->set_measurement_state(osi3::DetectedItemHeader_MeasurementState_MEASUREMENT_STATE_MEASURED);
                         obj->mutable_header()->add_sensor_id()->CopyFrom(currentIn.sensor_id());
+                        
                         obj->mutable_base()->mutable_position()->set_x(rel_x);
                         obj->mutable_base()->mutable_position()->set_y(rel_y);
                         obj->mutable_base()->mutable_position()->set_z(rel_z);
+                        
+                        obj->mutable_base()->mutable_velocity()->set_x(rel_vx);
+                        obj->mutable_base()->mutable_velocity()->set_y(rel_vy);
+                        obj->mutable_base()->mutable_velocity()->set_z(rel_vz);
+
                         obj->mutable_base()->mutable_orientation()->set_yaw(rel_yaw);
+                        
                         obj->mutable_base()->mutable_dimension()->set_length(veh.base().dimension().length());
                         obj->mutable_base()->mutable_dimension()->set_width(veh.base().dimension().width());
                         obj->mutable_base()->mutable_dimension()->set_height(veh.base().dimension().height());

@@ -11,7 +11,7 @@
 using namespace std;
 
 #ifndef FMU_SHARED_OBJECT
-#define FMI2_FUNCTION_PREFIX OSMPDummySensor_
+#define FMI2_FUNCTION_PREFIX OSMPDummyFunction_
 #endif
 #include "fmi2Functions.h"
 
@@ -47,12 +47,18 @@ using namespace std;
 #define FMI_BOOLEAN_VARS (FMI_BOOLEAN_LAST_IDX+1)
 
 /* Integer Variables */
-#define FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX 0
-#define FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX 1
-#define FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX 2
-#define FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX 3
-#define FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX 4
-#define FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX 5
+// #define FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX 0
+// #define FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX 1
+// #define FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX 2
+// #define FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX 3
+// #define FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX 4
+// #define FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX 5
+#define FMI_INTEGER_SENSORDATA_IN_BASELO_IDX 0
+#define FMI_INTEGER_SENSORDATA_IN_BASEHI_IDX 1
+#define FMI_INTEGER_SENSORDATA_IN_SIZE_IDX 2
+#define FMI_INTEGER_TRAFFICUPDATE_OUT_BASELO_IDX 3
+#define FMI_INTEGER_TRAFFICUPDATE_OUT_BASEHI_IDX 4
+#define FMI_INTEGER_TRAFFICUPDATE_OUT_SIZE_IDX 5
 #define FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASELO_IDX 6
 #define FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASEHI_IDX 7
 #define FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_SIZE_IDX 8
@@ -80,15 +86,16 @@ using namespace std;
 
 #undef min
 #undef max
-#include "osi_sensorview.pb.h"
+// #include "osi_sensorview.pb.h"
 #include "osi_sensordata.pb.h"
+#include "osi_trafficupdate.pb.h"
 
 /* FMU Class */
-class COSMPDummySensor {
+class COSMPDummyFunction {
 public:
     /* FMI2 Interface mapped to C++ */
-    COSMPDummySensor(fmi2String theinstanceName, fmi2Type thefmuType, fmi2String thefmuGUID, fmi2String thefmuResourceLocation, const fmi2CallbackFunctions* thefunctions, fmi2Boolean thevisible, fmi2Boolean theloggingOn);
-    ~COSMPDummySensor();
+    COSMPDummyFunction(fmi2String theinstanceName, fmi2Type thefmuType, fmi2String thefmuGUID, fmi2String thefmuResourceLocation, const fmi2CallbackFunctions* thefunctions, fmi2Boolean thevisible, fmi2Boolean theloggingOn);
+    ~COSMPDummyFunction();
     fmi2Status SetDebugLogging(fmi2Boolean theloggingOn,size_t nCategories, const fmi2String categories[]);
     static fmi2Component Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2String fmuGUID, fmi2String fmuResourceLocation, const fmi2CallbackFunctions* functions, fmi2Boolean visible, fmi2Boolean loggingOn);
     fmi2Status SetupExperiment(fmi2Boolean toleranceDefined, fmi2Real tolerance, fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime);
@@ -137,7 +144,7 @@ protected:
 #else
             vsnprintf(buffer, 1024, format, ap);
 #endif
-            private_log_file << "OSMPDummySensor" << "::Global:FMI: " << buffer << endl;
+            private_log_file << "OSMPDummyFunction" << "::Global:FMI: " << buffer << endl;
             private_log_file.flush();
         }
 #endif
@@ -157,7 +164,7 @@ protected:
         if (!private_log_file.is_open())
             private_log_file.open(PRIVATE_LOG_PATH, ios::out | ios::app);
         if (private_log_file.is_open()) {
-            private_log_file << "OSMPDummySensor" << "::" << instanceName << "<" << ((void*)this) << ">:" << category << ": " << buffer << endl;
+            private_log_file << "OSMPDummyFunction" << "::" << instanceName << "<" << ((void*)this) << ">:" << category << ": " << buffer << endl;
             private_log_file.flush();
         }
 #endif
@@ -220,9 +227,14 @@ protected:
     bool get_fmi_sensor_view_config(osi3::SensorViewConfiguration& data);
     void set_fmi_sensor_view_config_request(const osi3::SensorViewConfiguration& data);
     void reset_fmi_sensor_view_config_request();
-    bool get_fmi_sensor_view_in(osi3::SensorView& data);
-    void set_fmi_sensor_data_out(const osi3::SensorData& data);
-    void reset_fmi_sensor_data_out();
+    // bool get_fmi_sensor_view_in(osi3::SensorView& data);
+    // void set_fmi_sensor_data_out(const osi3::SensorData& data);
+    // void reset_fmi_sensor_data_out();
+
+    bool get_fmi_sensor_data_in(osi3::SensorData& data);
+    void set_fmi_traffic_update_out(const osi3::TrafficUpdate& data);
+    void reset_fmi_traffic_update_out();
+
 
     /* Refreshing of Calculated Parameters */
     void refresh_fmi_sensor_view_config_request();
