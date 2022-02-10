@@ -358,27 +358,34 @@ bool insideFoV(double distance, double rel_yaw)
     }
 }
 
-bool COSMPDummyFunction::activateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw)
+void COSMPDummyFunction::activateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw, double &decelRequest)
 {
     if (rel_vx >= 0){
-        return false;
+        return;
     }
 
-    double rel_distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z) - 4.5;
+    double rel_distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z) - 4.5; //TODO Fix the 4.5m diff to be read as dimension of car  
     double rel_v = sqrt(rel_vx*rel_vx + rel_vy*rel_vy + rel_vz*rel_vz);
 
     double ttc = rel_distance / rel_v;
 
-    double TTClimit = 1.5;
+    double pbTTClimit = 2.0; // prebrake 
+    double fbTTClimit = 1.5; // fullbrake 
     double collisionWidth = 1.0 ;
 
     normal_log("OSI","Calculating TTC: %f,  at Distance: %f, for velocity: %f",ttc,rel_distance,rel_v);
 
-    if (ttc< TTClimit && abs(rel_y) < collisionWidth){
-        return true;
+    if (ttc< fbTTClimit && abs(rel_y) < collisionWidth){
+        decelRequest = -5.0;
+        normal_log("OSI", "Detected vehicle within TTC limit. FULL BRAKE!");
+
+    }
+    else if (ttc< pbTTClimit && abs(rel_y) < collisionWidth) {
+        decelRequest = -3.0;
+        normal_log("OSI", "Detected vehicle within TTC limit. PRE BRAKE!");
     }
     else {
-        return false;
+        decelRequest = 0.0;
     }
 }
 
@@ -434,24 +441,14 @@ fmi2Status COSMPDummyFunction::doCalc(fmi2Real currentCommunicationPoint, fmi2Re
 
                     double rel_yaw = veh.base().orientation().yaw();
 
-                    if (activateAEB(rel_x, rel_y, rel_z, rel_vx, rel_vy, rel_vz, rel_yaw)) {
-                        // Activate AEB by setting Acceleration to -5 m/s^2 in x-led. (Assuming that this is local accel)
-                        obj->mutable_base()->mutable_acceleration()->set_x(-5.0);
-                        obj->mutable_base()->mutable_acceleration()->set_y(0.0);
-                        obj->mutable_base()->mutable_acceleration()->set_z(0.0);
-
-                        obj->mutable_base()->mutable_orientation()->set_yaw(0.0);
-                        normal_log("OSI", "Detected vehicle within TTC limit. BRAKE!");
-                    }
-                    else {
-                        // Send no accel request
-                        obj->mutable_base()->mutable_acceleration()->set_x(0.0);
-                        obj->mutable_base()->mutable_acceleration()->set_y(0.0);
-                        obj->mutable_base()->mutable_acceleration()->set_z(0.0);
-
-                        obj->mutable_base()->mutable_orientation()->set_yaw(0.0);
-                        normal_log("OSI", "No Detected vehicle within TTC limit.");
-                    }
+                    double decelRequest = 0.0;    
+                    activateAEB(rel_x, rel_y, rel_z, rel_vx, rel_vy, rel_vz, rel_yaw, decelRequest);
+                    
+                    obj->mutable_base()->mutable_acceleration()->set_x(decelRequest);
+                    obj->mutable_base()->mutable_acceleration()->set_y(0.0);
+                    obj->mutable_base()->mutable_acceleration()->set_z(0.0);
+                    obj->mutable_base()->mutable_orientation()->set_yaw(0.0);
+    
             });
         normal_log("OSI","Mapped %d vehicles to output", i);
         /* Serialize */
