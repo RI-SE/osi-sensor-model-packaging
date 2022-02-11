@@ -128,18 +128,6 @@ void COSMPDummyFunction::reset_fmi_sensor_view_config_request()
     integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASELO_IDX]=0;
 }
 
-// bool COSMPDummyFunction::get_fmi_sensor_view_in(osi3::SensorView& data)
-// {
-//     if (integer_vars[FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX] > 0) {
-//         void* buffer = decode_integer_to_pointer(integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX]);
-//         normal_log("OSMP","Got %08X %08X, reading from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX],buffer);
-//         data.ParseFromArray(buffer,integer_vars[FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX]);
-//         return true;
-//     } else {
-//         return false;
-//     }
-// }
-
 bool COSMPDummyFunction::get_fmi_sensor_data_in(osi3::SensorData& data)
 {
     if (integer_vars[FMI_INTEGER_SENSORDATA_IN_SIZE_IDX] > 0) {
@@ -152,17 +140,6 @@ bool COSMPDummyFunction::get_fmi_sensor_data_in(osi3::SensorData& data)
     }
 }
 
-
-
-// void COSMPDummyFunction::set_fmi_sensor_data_out(const osi3::SensorData& data)
-// {
-//     data.SerializeToString(currentOutputBuffer);
-//     encode_pointer_to_integer(currentOutputBuffer->data(),integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX]);
-//     integer_vars[FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX]=(fmi2Integer)currentOutputBuffer->length();
-//     normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX],currentOutputBuffer->data());
-//     swap(currentOutputBuffer,lastOutputBuffer);
-// }
-
 void COSMPDummyFunction::set_fmi_traffic_update_out(const osi3::TrafficUpdate& data)
 {
     data.SerializeToString(currentOutputBuffer);
@@ -171,13 +148,6 @@ void COSMPDummyFunction::set_fmi_traffic_update_out(const osi3::TrafficUpdate& d
     normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_TRAFFICUPDATE_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICUPDATE_OUT_BASELO_IDX],currentOutputBuffer->data());
     swap(currentOutputBuffer,lastOutputBuffer);
 }
-
-// void COSMPDummyFunction::reset_fmi_sensor_data_out()
-// {
-//     integer_vars[FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX]=0;
-//     integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX]=0;
-//     integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX]=0;
-// }
 
 void COSMPDummyFunction::reset_fmi_traffic_update_out()
 {
@@ -319,73 +289,42 @@ void rotatePoint2D(double x, double y, double yaw, double &rx, double &ry, doubl
     ryaw = (atan2(ry,rx) * 180/M_PI);
 }
 
-/*!
-     * \brief Field of view filter for Low-fid sensor model. Returns true if target object is inside specified FoV.  
-     * \param distance Distance (m) to target.
-     * \param rel_yaw Relative yaw angle (degrees) to target. 
-     * \return true/false if object is inside FoV.
-     */
-bool insideFoV(double distance, double rel_yaw)
-{   
-    // distance threshold (meters)
-    double srange_dist_thresh = 20;
-    double lrange_dist_thresh = 150;
-    // fov (yaw) threshold ( +-degrees) 
-    double srange_fov = 45;
-    double lrange_fov = 6;
-  
-    // Criteria
-    if (distance < lrange_dist_thresh){      // Within range   
-        if (distance < srange_dist_thresh) { // Within small range
-            if (abs(rel_yaw) < srange_fov) { // Within FoV
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-        else {                               // Within long range
-            if (abs(rel_yaw) < lrange_fov) { // Within FoV
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-    }
-    else{ // Outside range 
-        return false;
-    }
-}
-
-void COSMPDummyFunction::activateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw, double &decelRequest)
+void COSMPDummyFunction::evaluateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw, double &decelRequest)
 {
+    // Return if relative is positive. (AKA not approaching target)
     if (rel_vx >= 0){
         return;
     }
 
-    double rel_distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z) - 4.5; //TODO Fix the 4.5m diff to be read as dimension of car  
+    // Function variables. Thinking of adding these to class/input instead ?? 
+
+    double pbTTClimit = 2.5; // prebrake 
+    double pbRequest = -3.0;
+
+    double fbTTClimit = 1.5; // fullbrake
+    double fbRequest = -5.0; 
+
+    // TODO add information to Sensordata so that this could be derived
+    double collisionWidth = 1.5; // ~Width/2 of target (Could be derived with getting dimension of target) 
+    double distanceOffset = 4.5; // ~Length/2 of target + ~length/2 of ego. (Since Sensorview calculates distance from base of ego to base of target) 
+
+    // Calculate TTC relative to target
+    double rel_distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z) - distanceOffset;
     double rel_v = sqrt(rel_vx*rel_vx + rel_vy*rel_vy + rel_vz*rel_vz);
 
     double ttc = rel_distance / rel_v;
 
-    double pbTTClimit = 2.0; // prebrake 
-    double fbTTClimit = 1.5; // fullbrake 
-    double collisionWidth = 1.0 ;
 
     normal_log("OSI","Calculating TTC: %f,  at Distance: %f, for velocity: %f",ttc,rel_distance,rel_v);
 
     if (ttc< fbTTClimit && abs(rel_y) < collisionWidth){
-        decelRequest = -5.0;
+        decelRequest = fbRequest;
         normal_log("OSI", "Detected vehicle within TTC limit. FULL BRAKE!");
 
     }
     else if (ttc< pbTTClimit && abs(rel_y) < collisionWidth) {
-        decelRequest = -3.0;
+        decelRequest = pbRequest;
         normal_log("OSI", "Detected vehicle within TTC limit. PRE BRAKE!");
-    }
-    else {
-        decelRequest = 0.0;
     }
 }
 
@@ -411,7 +350,7 @@ fmi2Status COSMPDummyFunction::doCalc(fmi2Real currentCommunicationPoint, fmi2Re
         normal_log("OSI","Getting SensorData from hostvehicle with ID: %llu",ego_id.value());
         osi3::Timestamp stamp = currentIn.sensor_view().Get(0).global_ground_truth().timestamp();
         double stamp_s = stamp.seconds() + (stamp.nanos()/1000000000.0);
-        normal_log("OSI", "Getting simulation timestamp: %f", stamp_s);
+        normal_log("OSI", "Getting simulation timestamp: %i:%f", (int)floor(stamp_s/60.0), fmod(stamp_s,60.0));
 
         /* Clear Output */
         currentOut.Clear();
@@ -442,7 +381,7 @@ fmi2Status COSMPDummyFunction::doCalc(fmi2Real currentCommunicationPoint, fmi2Re
                     double rel_yaw = veh.base().orientation().yaw();
 
                     double decelRequest = 0.0;    
-                    activateAEB(rel_x, rel_y, rel_z, rel_vx, rel_vy, rel_vz, rel_yaw, decelRequest);
+                    evaluateAEB(rel_x, rel_y, rel_z, rel_vx, rel_vy, rel_vz, rel_yaw, decelRequest);
                     
                     obj->mutable_base()->mutable_acceleration()->set_x(decelRequest);
                     obj->mutable_base()->mutable_acceleration()->set_y(0.0);

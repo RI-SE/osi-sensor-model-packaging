@@ -227,10 +227,6 @@ protected:
     bool get_fmi_sensor_view_config(osi3::SensorViewConfiguration& data);
     void set_fmi_sensor_view_config_request(const osi3::SensorViewConfiguration& data);
     void reset_fmi_sensor_view_config_request();
-    // bool get_fmi_sensor_view_in(osi3::SensorView& data);
-    // void set_fmi_sensor_data_out(const osi3::SensorData& data);
-    // void reset_fmi_sensor_data_out();
-
     bool get_fmi_sensor_data_in(osi3::SensorData& data);
     void set_fmi_traffic_update_out(const osi3::TrafficUpdate& data);
     void reset_fmi_traffic_update_out();
@@ -239,5 +235,6 @@ protected:
     /* Refreshing of Calculated Parameters */
     void refresh_fmi_sensor_view_config_request();
 
-    void activateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw, double &decelRequest);
+    /* TrafficUpdate functions */
+    void evaluateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw, double &decelRequest);
 };
