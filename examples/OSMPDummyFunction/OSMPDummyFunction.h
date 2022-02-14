@@ -47,12 +47,6 @@ using namespace std;
 #define FMI_BOOLEAN_VARS (FMI_BOOLEAN_LAST_IDX+1)
 
 /* Integer Variables */
-// #define FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX 0
-// #define FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX 1
-// #define FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX 2
-// #define FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX 3
-// #define FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX 4
-// #define FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX 5
 #define FMI_INTEGER_SENSORDATA_IN_BASELO_IDX 0
 #define FMI_INTEGER_SENSORDATA_IN_BASEHI_IDX 1
 #define FMI_INTEGER_SENSORDATA_IN_SIZE_IDX 2
@@ -86,7 +80,6 @@ using namespace std;
 
 #undef min
 #undef max
-// #include "osi_sensorview.pb.h"
 #include "osi_sensordata.pb.h"
 #include "osi_trafficupdate.pb.h"
 
@@ -237,4 +230,13 @@ protected:
 
     /* TrafficUpdate functions */
     void evaluateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw, double &decelRequest);
+    
+    /* TrafficUpdate variables */
+    double pbTTClimit = 2.5;    // Prebrake TTC limit [s] 
+    double pbRequest = -3.0;    // Prebrake decel request [m/s^2]
+    double fbTTClimit = 1.5;    // Fullbrake TTC limit [s] 
+    double fbRequest = -5.0;    // Fullbrake decel request [m/s^2]
+    // Offsets. TODO add information to Sensordata so that this could be derived in realtime from target  
+    double collisionWidth = 1.5; // ~Width/2 of target (Could be derived with getting dimension of target) 
+    double distanceOffset = 4.5; // ~Length/2 of target + ~length/2 of ego. (Since Sensorview calculates distance from base of ego to base of target) 
 };

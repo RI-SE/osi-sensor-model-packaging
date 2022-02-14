@@ -296,18 +296,6 @@ void COSMPDummyFunction::evaluateAEB(double &rel_x, double &rel_y, double &rel_z
         return;
     }
 
-    // Function variables. Thinking of adding these to class/input instead ?? 
-
-    double pbTTClimit = 2.5; // prebrake 
-    double pbRequest = -3.0;
-
-    double fbTTClimit = 1.5; // fullbrake
-    double fbRequest = -5.0; 
-
-    // TODO add information to Sensordata so that this could be derived
-    double collisionWidth = 1.5; // ~Width/2 of target (Could be derived with getting dimension of target) 
-    double distanceOffset = 4.5; // ~Length/2 of target + ~length/2 of ego. (Since Sensorview calculates distance from base of ego to base of target) 
-
     // Calculate TTC relative to target
     double rel_distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z) - distanceOffset;
     double rel_v = sqrt(rel_vx*rel_vx + rel_vy*rel_vy + rel_vz*rel_vz);
