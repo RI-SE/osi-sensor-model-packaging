@@ -8,7 +8,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "OSMPDummySensor.h"
+#include "OSMPDummyFunction.h"
 
 /*
  * Debug Breaks
@@ -52,7 +52,7 @@
 using namespace std;
 
 #ifdef PRIVATE_LOG_PATH
-ofstream COSMPDummySensor::private_log_file;
+ofstream COSMPDummyFunction::private_log_file;
 #endif
 
 /*
@@ -100,7 +100,7 @@ void encode_pointer_to_integer(const void* ptr,fmi2Integer& hi,fmi2Integer& lo)
 #endif
 }
 
-bool COSMPDummySensor::get_fmi_sensor_view_config(osi3::SensorViewConfiguration& data)
+bool COSMPDummyFunction::get_fmi_sensor_view_config(osi3::SensorViewConfiguration& data)
 {
     if (integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_SIZE_IDX] > 0) {
         void* buffer = decode_integer_to_pointer(integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_BASELO_IDX]);
@@ -112,7 +112,7 @@ bool COSMPDummySensor::get_fmi_sensor_view_config(osi3::SensorViewConfiguration&
     }
 }
 
-void COSMPDummySensor::set_fmi_sensor_view_config_request(const osi3::SensorViewConfiguration& data)
+void COSMPDummyFunction::set_fmi_sensor_view_config_request(const osi3::SensorViewConfiguration& data)
 {
     data.SerializeToString(currentConfigRequestBuffer);
     encode_pointer_to_integer(currentConfigRequestBuffer->data(),integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASELO_IDX]);
@@ -121,42 +121,42 @@ void COSMPDummySensor::set_fmi_sensor_view_config_request(const osi3::SensorView
     swap(currentConfigRequestBuffer,lastConfigRequestBuffer);
 }
 
-void COSMPDummySensor::reset_fmi_sensor_view_config_request()
+void COSMPDummyFunction::reset_fmi_sensor_view_config_request()
 {
     integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_SIZE_IDX]=0;
     integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASEHI_IDX]=0;
     integer_vars[FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASELO_IDX]=0;
 }
 
-bool COSMPDummySensor::get_fmi_sensor_view_in(osi3::SensorView& data)
+bool COSMPDummyFunction::get_fmi_sensor_data_in(osi3::SensorData& data)
 {
-    if (integer_vars[FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX] > 0) {
-        void* buffer = decode_integer_to_pointer(integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX]);
-        normal_log("OSMP","Got %08X %08X, reading from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX],buffer);
-        data.ParseFromArray(buffer,integer_vars[FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX]);
+    if (integer_vars[FMI_INTEGER_SENSORDATA_IN_SIZE_IDX] > 0) {
+        void* buffer = decode_integer_to_pointer(integer_vars[FMI_INTEGER_SENSORDATA_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORDATA_IN_BASELO_IDX]);
+        normal_log("OSMP","Got %08X %08X, reading from %p ...",integer_vars[FMI_INTEGER_SENSORDATA_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORDATA_IN_BASELO_IDX],buffer);
+        data.ParseFromArray(buffer,integer_vars[FMI_INTEGER_SENSORDATA_IN_SIZE_IDX]);
         return true;
     } else {
         return false;
     }
 }
 
-void COSMPDummySensor::set_fmi_sensor_data_out(const osi3::SensorData& data)
+void COSMPDummyFunction::set_fmi_traffic_update_out(const osi3::TrafficUpdate& data)
 {
     data.SerializeToString(currentOutputBuffer);
-    encode_pointer_to_integer(currentOutputBuffer->data(),integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX]);
-    integer_vars[FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX]=(fmi2Integer)currentOutputBuffer->length();
-    normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX],currentOutputBuffer->data());
+    encode_pointer_to_integer(currentOutputBuffer->data(),integer_vars[FMI_INTEGER_TRAFFICUPDATE_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICUPDATE_OUT_BASELO_IDX]);
+    integer_vars[FMI_INTEGER_TRAFFICUPDATE_OUT_SIZE_IDX]=(fmi2Integer)currentOutputBuffer->length();
+    normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_TRAFFICUPDATE_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICUPDATE_OUT_BASELO_IDX],currentOutputBuffer->data());
     swap(currentOutputBuffer,lastOutputBuffer);
 }
 
-void COSMPDummySensor::reset_fmi_sensor_data_out()
+void COSMPDummyFunction::reset_fmi_traffic_update_out()
 {
-    integer_vars[FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX]=0;
-    integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX]=0;
-    integer_vars[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX]=0;
+    integer_vars[FMI_INTEGER_TRAFFICUPDATE_OUT_SIZE_IDX]=0;
+    integer_vars[FMI_INTEGER_TRAFFICUPDATE_OUT_BASEHI_IDX]=0;
+    integer_vars[FMI_INTEGER_TRAFFICUPDATE_OUT_BASELO_IDX]=0;
 }
 
-void COSMPDummySensor::refresh_fmi_sensor_view_config_request()
+void COSMPDummyFunction::refresh_fmi_sensor_view_config_request()
 {
     osi3::SensorViewConfiguration config;
     if (get_fmi_sensor_view_config(config))
@@ -181,7 +181,7 @@ void COSMPDummySensor::refresh_fmi_sensor_view_config_request()
  * Actual Core Content
  */
 
-fmi2Status COSMPDummySensor::doInit()
+fmi2Status COSMPDummyFunction::doInit()
 {
     DEBUGBREAK();
 
@@ -205,21 +205,21 @@ fmi2Status COSMPDummySensor::doInit()
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::doStart(fmi2Boolean toleranceDefined, fmi2Real tolerance, fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime)
+fmi2Status COSMPDummyFunction::doStart(fmi2Boolean toleranceDefined, fmi2Real tolerance, fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime)
 {
     DEBUGBREAK();
 
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::doEnterInitializationMode()
+fmi2Status COSMPDummyFunction::doEnterInitializationMode()
 {
     DEBUGBREAK();
 
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::doExitInitializationMode()
+fmi2Status COSMPDummyFunction::doExitInitializationMode()
 {
     DEBUGBREAK();
 
@@ -289,75 +289,56 @@ void rotatePoint2D(double x, double y, double yaw, double &rx, double &ry, doubl
     ryaw = (atan2(ry,rx) * 180/M_PI);
 }
 
-/*!
-     * \brief Field of view filter for Low-fid sensor model. Returns true if target object is inside specified FoV.  
-     * \param distance Distance (m) to target.
-     * \param rel_yaw Relative yaw angle (degrees) to target. 
-     * \return true/false if object is inside FoV.
-     */
-bool insideFoV(double distance, double rel_yaw)
-{   
-    // distance threshold (meters)
-    double srange_dist_thresh = 20;
-    double lrange_dist_thresh = 150;
-    // fov (yaw) threshold ( +-degrees) 
-    double srange_fov = 45;
-    double lrange_fov = 6;
-  
-    // Criteria
-    if (distance < lrange_dist_thresh){      // Within range   
-        if (distance < srange_dist_thresh) { // Within small range
-            if (abs(rel_yaw) < srange_fov) { // Within FoV
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-        else {                               // Within long range
-            if (abs(rel_yaw) < lrange_fov) { // Within FoV
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
+void COSMPDummyFunction::evaluateAEB(double &rel_x, double &rel_y, double &rel_z, double &rel_vx, double &rel_vy, double &rel_vz, double &rel_yaw, double &decelRequest)
+{
+    // Return if relative is positive. (AKA not approaching target)
+    if (rel_vx >= 0){
+        return;
     }
-    else{ // Outside range 
-        return false;
+
+    // Calculate TTC relative to target
+    double rel_distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z) - distanceOffset;
+    double rel_v = sqrt(rel_vx*rel_vx + rel_vy*rel_vy + rel_vz*rel_vz);
+
+    double ttc = rel_distance / rel_v;
+
+
+    normal_log("OSI","Calculating TTC: %f,  at Distance: %f, for velocity: %f",ttc,rel_distance,rel_v);
+
+    if (ttc< fbTTClimit && abs(rel_y) < collisionWidth){
+        decelRequest = fbRequest;
+        normal_log("OSI", "Detected vehicle within TTC limit. FULL BRAKE!");
+
+    }
+    else if (ttc< pbTTClimit && abs(rel_y) < collisionWidth) {
+        decelRequest = pbRequest;
+        normal_log("OSI", "Detected vehicle within TTC limit. PRE BRAKE!");
     }
 }
 
-fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint)
+fmi2Status COSMPDummyFunction::doCalc(fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint)
 {
     DEBUGBREAK();
 
-    osi3::SensorView currentIn;
-    osi3::SensorData currentOut;
+    osi3::SensorData currentIn;
+    osi3::TrafficUpdate currentOut;
     double time = currentCommunicationPoint+communicationStepSize;
-    normal_log("OSI","Calculating Sensor at %f for %f (step size %f)",currentCommunicationPoint,time,communicationStepSize);
-    if (get_fmi_sensor_view_in(currentIn)) {
-        double ego_x=0, ego_y=0, ego_z=0, ego_vx=0, ego_vy=0 ,ego_yaw=0, ego_pitch=0, ego_roll=0;
-        osi3::Identifier ego_id = currentIn.global_ground_truth().host_vehicle_id();
-        normal_log("OSI","Looking for EgoVehicle with ID: %llu",ego_id.value());
-        for_each(currentIn.global_ground_truth().moving_object().begin(),currentIn.global_ground_truth().moving_object().end(),
-            [this, ego_id, &ego_x, &ego_y, &ego_z, &ego_vx, &ego_vy, &ego_yaw, &ego_pitch, &ego_roll](const osi3::MovingObject& obj) {
-                normal_log("OSI","MovingObject with ID %llu is EgoVehicle: %d",obj.id().value(), obj.id().value() == ego_id.value());
-                if (obj.id().value() == ego_id.value()) {
-                    normal_log("OSI","Found EgoVehicle with ID: %llu",obj.id().value());
-                    ego_x = obj.base().position().x();
-                    ego_y = obj.base().position().y();
-                    ego_z = obj.base().position().z();
-                    
-                    ego_vx = obj.base().velocity().x();
-                    ego_vy = obj.base().velocity().y();
-
-                    ego_yaw = obj.base().orientation().yaw();
-                    ego_pitch = obj.base().orientation().pitch();
-                    ego_roll = obj.base().orientation().roll();
-                }
-            });
-        normal_log("OSI","Current Ego Position: %f,%f,%f", ego_x, ego_y, ego_z);
+    normal_log("OSI","Calculating Function at %f for %f (step size %f)",currentCommunicationPoint,time,communicationStepSize);
+    if (get_fmi_sensor_data_in(currentIn)) {
+        
+        int sv_size = currentIn.sensor_view_size();
+        normal_log("OSI","Getting %i Sensorview from SensorData",sv_size);
+        if (sv_size < 1) {
+            normal_log("OSI", "No Sensorview data to calculate ego available");
+            return fmi2OK;
+        }
+        // Get the simulation information needed about ego. 
+        // Only ID and timestamp for now but if function requires more input in the future it can be added here.
+        osi3::Identifier ego_id = currentIn.sensor_view().Get(0).global_ground_truth().host_vehicle_id();
+        normal_log("OSI","Getting SensorData from hostvehicle with ID: %llu",ego_id.value());
+        osi3::Timestamp stamp = currentIn.sensor_view().Get(0).global_ground_truth().timestamp();
+        double stamp_s = stamp.seconds() + (stamp.nanos()/1000000000.0);
+        normal_log("OSI", "Getting simulation timestamp: %i:%f", (int)floor(stamp_s/60.0), fmod(stamp_s,60.0));
 
         /* Clear Output */
         currentOut.Clear();
@@ -365,95 +346,60 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
         /* Adjust Timestamps and Ids */
         currentOut.mutable_timestamp()->set_seconds((long long int)floor(time));
         currentOut.mutable_timestamp()->set_nanos((int)((time - floor(time))*1000000000.0));
-        /* Copy of SensorView */
-        currentOut.add_sensor_view()->CopyFrom(currentIn);
 
-        int i=0;
-        double actual_range = fmi_nominal_range()*1.1;
-        for_each(currentIn.global_ground_truth().moving_object().begin(),currentIn.global_ground_truth().moving_object().end(),
-            [this,&i,&currentIn,&currentOut,ego_id,ego_x,ego_y,ego_z,ego_vx,ego_vy,ego_yaw,ego_pitch,ego_roll,actual_range](const osi3::MovingObject& veh) {
-                if (veh.id().value() != ego_id.value()) {
-                    // NOTE: We currently do not take sensor mounting position into account,
-                    // i.e. sensor-relative coordinates are relative to center of bounding box
-                    // of ego vehicle currently.
-                    double trans_x = veh.base().position().x()-ego_x;
-                    double trans_y = veh.base().position().y()-ego_y;
-                    double trans_z = veh.base().position().z()-ego_z;
+        
+        // Add host vehicle to TrafficUpdate
+        // In the future this can be in a loop to apply the function to multiple vehicles but for now only ego is necessary
+        osi3::MovingObject *obj = currentOut.mutable_update()->Add();
+        obj->mutable_id()->set_value(ego_id.value());
+        int i=1; 
 
-                    double trans_vx = veh.base().velocity().x() - ego_vx;
-                    double trans_vy = veh.base().velocity().y() - ego_vy;
+        // For every target within FoV, check if AEB should be activated
+        for_each(currentIn.moving_object().begin(),currentIn.moving_object().end(),
+            [this,&i,&currentIn,&currentOut,&obj](const osi3::DetectedMovingObject& veh) {
 
-                    double rel_x,rel_y,rel_z,rel_vx,rel_vy,rel_vz,rel_yaw, dummy;
+                    double rel_x = veh.base().position().x();
+                    double rel_y = veh.base().position().y();
+                    double rel_z = veh.base().position().z();
 
-                    rotatePoint2D(trans_x, trans_y, ego_yaw, rel_x, rel_y, rel_yaw);
-                    rotatePoint2D(trans_vx, trans_vy, ego_yaw, rel_vx, rel_vy, dummy);
+                    double rel_vx = veh.base().velocity().x();
+                    double rel_vy = veh.base().velocity().y();
+                    double rel_vz = veh.base().velocity().z();
 
-                    double distance = sqrt(rel_x*rel_x + rel_y*rel_y + rel_z*rel_z);
-                    double trans_distance = sqrt(trans_x*trans_x + trans_y*trans_y + trans_z*trans_z);
-                    if (insideFoV(distance,rel_yaw)) {
-                        osi3::DetectedMovingObject *obj = currentOut.mutable_moving_object()->Add();
-                        obj->mutable_header()->add_ground_truth_id()->CopyFrom(veh.id());
-                        obj->mutable_header()->mutable_tracking_id()->set_value(i);
-                        obj->mutable_header()->set_existence_probability(cos((2.0*distance-actual_range)/actual_range));
-                        obj->mutable_header()->set_measurement_state(osi3::DetectedItemHeader_MeasurementState_MEASUREMENT_STATE_MEASURED);
-                        obj->mutable_header()->add_sensor_id()->CopyFrom(currentIn.sensor_id());
-                        
-                        obj->mutable_base()->mutable_position()->set_x(rel_x);
-                        obj->mutable_base()->mutable_position()->set_y(rel_y);
-                        obj->mutable_base()->mutable_position()->set_z(rel_z);
-                        
-                        obj->mutable_base()->mutable_velocity()->set_x(rel_vx);
-                        obj->mutable_base()->mutable_velocity()->set_y(rel_vy);
-                        obj->mutable_base()->mutable_velocity()->set_z(rel_vz);
+                    double rel_yaw = veh.base().orientation().yaw();
 
-                        obj->mutable_base()->mutable_orientation()->set_yaw(rel_yaw);
-                        
-                        obj->mutable_base()->mutable_dimension()->set_length(veh.base().dimension().length());
-                        obj->mutable_base()->mutable_dimension()->set_width(veh.base().dimension().width());
-                        obj->mutable_base()->mutable_dimension()->set_height(veh.base().dimension().height());
-                        
-                        osi3::DetectedMovingObject::CandidateMovingObject* candidate = obj->add_candidate();
-                        candidate->set_type(veh.type());
-                        candidate->mutable_vehicle_classification()->CopyFrom(veh.vehicle_classification());
-                        candidate->set_probability(1);
-                        
-                        normal_log("OSI", "Detected vehicle! Relative Position: %f,%f,%f, Relative distance: %f, Relative Yaw: %f", rel_x, rel_y, rel_z, distance, rel_yaw);
-                        normal_log("OSI", "Unrotated - Relative Position %f,%f,%f, Relative distance: %f, Ego Yaw: %f", trans_x,trans_y,trans_z,trans_distance,ego_yaw);
-
-                        normal_log("OSI","Output Vehicle %d[%llu] Probability %f Relative Position: %f,%f,%f (%f,%f,%f)",i,veh.id().value(),obj->header().existence_probability(),rel_x,rel_y,rel_z,obj->base().position().x(),obj->base().position().y(),obj->base().position().z());
-                        i++;
-                    } else {
-                        normal_log("OSI","Ignoring Vehicle %d[%llu] Outside Sensor Scope Relative Position: %f,%f,%f (%f,%f,%f)",i,veh.id().value(),veh.base().position().x()-ego_x,veh.base().position().y()-ego_y,veh.base().position().z()-ego_z,veh.base().position().x(),veh.base().position().y(),veh.base().position().z());
-                    }
-                }
-                else
-                {
-                    normal_log("OSI","Ignoring EGO Vehicle %d[%llu] Relative Position: %f,%f,%f (%f,%f,%f)",i,veh.id().value(),veh.base().position().x()-ego_x,veh.base().position().y()-ego_y,veh.base().position().z()-ego_z,veh.base().position().x(),veh.base().position().y(),veh.base().position().z());
-                }
+                    double decelRequest = 0.0;    
+                    evaluateAEB(rel_x, rel_y, rel_z, rel_vx, rel_vy, rel_vz, rel_yaw, decelRequest);
+                    
+                    obj->mutable_base()->mutable_acceleration()->set_x(decelRequest);
+                    obj->mutable_base()->mutable_acceleration()->set_y(0.0);
+                    obj->mutable_base()->mutable_acceleration()->set_z(0.0);
+                    obj->mutable_base()->mutable_orientation()->set_yaw(0.0);
+    
             });
         normal_log("OSI","Mapped %d vehicles to output", i);
         /* Serialize */
-        set_fmi_sensor_data_out(currentOut);
+        set_fmi_traffic_update_out(currentOut);
         set_fmi_valid(true);
-        set_fmi_count(currentOut.moving_object_size());
+        set_fmi_count(currentOut.update_size());
     } else {
         /* We have no valid input, so no valid output */
         normal_log("OSI","No valid input, therefore providing no valid output.");
-        reset_fmi_sensor_data_out();
+        reset_fmi_traffic_update_out();
         set_fmi_valid(false);
         set_fmi_count(0);
     }
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::doTerm()
+fmi2Status COSMPDummyFunction::doTerm()
 {
     DEBUGBREAK();
 
     return fmi2OK;
 }
 
-void COSMPDummySensor::doFree()
+void COSMPDummyFunction::doFree()
 {
     DEBUGBREAK();
 }
@@ -462,7 +408,7 @@ void COSMPDummySensor::doFree()
  * Generic C++ Wrapper Code
  */
 
-COSMPDummySensor::COSMPDummySensor(fmi2String theinstanceName, fmi2Type thefmuType, fmi2String thefmuGUID, fmi2String thefmuResourceLocation, const fmi2CallbackFunctions* thefunctions, fmi2Boolean thevisible, fmi2Boolean theloggingOn)
+COSMPDummyFunction::COSMPDummyFunction(fmi2String theinstanceName, fmi2Type thefmuType, fmi2String thefmuGUID, fmi2String thefmuResourceLocation, const fmi2CallbackFunctions* thefunctions, fmi2Boolean thevisible, fmi2Boolean theloggingOn)
     : instanceName(theinstanceName),
     fmuType(thefmuType),
     fmuGUID(thefmuGUID),
@@ -482,7 +428,7 @@ COSMPDummySensor::COSMPDummySensor(fmi2String theinstanceName, fmi2Type thefmuTy
     loggingCategories.insert("OSI");
 }
 
-COSMPDummySensor::~COSMPDummySensor()
+COSMPDummyFunction::~COSMPDummyFunction()
 {
     delete currentOutputBuffer;
     delete lastOutputBuffer;
@@ -490,7 +436,7 @@ COSMPDummySensor::~COSMPDummySensor()
     delete lastConfigRequestBuffer;
 }
 
-fmi2Status COSMPDummySensor::SetDebugLogging(fmi2Boolean theloggingOn, size_t nCategories, const fmi2String categories[])
+fmi2Status COSMPDummyFunction::SetDebugLogging(fmi2Boolean theloggingOn, size_t nCategories, const fmi2String categories[])
 {
     fmi_verbose_log("fmi2SetDebugLogging(%s)", theloggingOn ? "true" : "false");
     loggingOn = theloggingOn ? true : false;
@@ -513,9 +459,9 @@ fmi2Status COSMPDummySensor::SetDebugLogging(fmi2Boolean theloggingOn, size_t nC
     return fmi2OK;
 }
 
-fmi2Component COSMPDummySensor::Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2String fmuGUID, fmi2String fmuResourceLocation, const fmi2CallbackFunctions* functions, fmi2Boolean visible, fmi2Boolean loggingOn)
+fmi2Component COSMPDummyFunction::Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2String fmuGUID, fmi2String fmuResourceLocation, const fmi2CallbackFunctions* functions, fmi2Boolean visible, fmi2Boolean loggingOn)
 {
-    COSMPDummySensor* myc = new COSMPDummySensor(instanceName,fmuType,fmuGUID,fmuResourceLocation,functions,visible,loggingOn);
+    COSMPDummyFunction* myc = new COSMPDummyFunction(instanceName,fmuType,fmuGUID,fmuResourceLocation,functions,visible,loggingOn);
 
     if (myc == NULL) {
         fmi_verbose_log_global("fmi2Instantiate(\"%s\",%d,\"%s\",\"%s\",\"%s\",%d,%d) = NULL (alloc failure)",
@@ -542,38 +488,38 @@ fmi2Component COSMPDummySensor::Instantiate(fmi2String instanceName, fmi2Type fm
     }
 }
 
-fmi2Status COSMPDummySensor::SetupExperiment(fmi2Boolean toleranceDefined, fmi2Real tolerance, fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime)
+fmi2Status COSMPDummyFunction::SetupExperiment(fmi2Boolean toleranceDefined, fmi2Real tolerance, fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime)
 {
     fmi_verbose_log("fmi2SetupExperiment(%d,%g,%g,%d,%g)", toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime);
     return doStart(toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime);
 }
 
-fmi2Status COSMPDummySensor::EnterInitializationMode()
+fmi2Status COSMPDummyFunction::EnterInitializationMode()
 {
     fmi_verbose_log("fmi2EnterInitializationMode()");
     return doEnterInitializationMode();
 }
 
-fmi2Status COSMPDummySensor::ExitInitializationMode()
+fmi2Status COSMPDummyFunction::ExitInitializationMode()
 {
     fmi_verbose_log("fmi2ExitInitializationMode()");
     simulation_started = true;
     return doExitInitializationMode();
 }
 
-fmi2Status COSMPDummySensor::DoStep(fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPointfmi2Component)
+fmi2Status COSMPDummyFunction::DoStep(fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPointfmi2Component)
 {
     fmi_verbose_log("fmi2DoStep(%g,%g,%d)", currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPointfmi2Component);
     return doCalc(currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPointfmi2Component);
 }
 
-fmi2Status COSMPDummySensor::Terminate()
+fmi2Status COSMPDummyFunction::Terminate()
 {
     fmi_verbose_log("fmi2Terminate()");
     return doTerm();
 }
 
-fmi2Status COSMPDummySensor::Reset()
+fmi2Status COSMPDummyFunction::Reset()
 {
     fmi_verbose_log("fmi2Reset()");
 
@@ -582,13 +528,13 @@ fmi2Status COSMPDummySensor::Reset()
     return doInit();
 }
 
-void COSMPDummySensor::FreeInstance()
+void COSMPDummyFunction::FreeInstance()
 {
     fmi_verbose_log("fmi2FreeInstance()");
     doFree();
 }
 
-fmi2Status COSMPDummySensor::GetReal(const fmi2ValueReference vr[], size_t nvr, fmi2Real value[])
+fmi2Status COSMPDummyFunction::GetReal(const fmi2ValueReference vr[], size_t nvr, fmi2Real value[])
 {
     fmi_verbose_log("fmi2GetReal(...)");
     for (size_t i = 0; i<nvr; i++) {
@@ -600,7 +546,7 @@ fmi2Status COSMPDummySensor::GetReal(const fmi2ValueReference vr[], size_t nvr, 
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::GetInteger(const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[])
+fmi2Status COSMPDummyFunction::GetInteger(const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[])
 {
     fmi_verbose_log("fmi2GetInteger(...)");
     bool need_refresh = !simulation_started;
@@ -617,7 +563,7 @@ fmi2Status COSMPDummySensor::GetInteger(const fmi2ValueReference vr[], size_t nv
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::GetBoolean(const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[])
+fmi2Status COSMPDummyFunction::GetBoolean(const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[])
 {
     fmi_verbose_log("fmi2GetBoolean(...)");
     for (size_t i = 0; i<nvr; i++) {
@@ -629,7 +575,7 @@ fmi2Status COSMPDummySensor::GetBoolean(const fmi2ValueReference vr[], size_t nv
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::GetString(const fmi2ValueReference vr[], size_t nvr, fmi2String value[])
+fmi2Status COSMPDummyFunction::GetString(const fmi2ValueReference vr[], size_t nvr, fmi2String value[])
 {
     fmi_verbose_log("fmi2GetString(...)");
     for (size_t i = 0; i<nvr; i++) {
@@ -641,7 +587,7 @@ fmi2Status COSMPDummySensor::GetString(const fmi2ValueReference vr[], size_t nvr
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::SetReal(const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[])
+fmi2Status COSMPDummyFunction::SetReal(const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[])
 {
     fmi_verbose_log("fmi2SetReal(...)");
     for (size_t i = 0; i<nvr; i++) {
@@ -653,7 +599,7 @@ fmi2Status COSMPDummySensor::SetReal(const fmi2ValueReference vr[], size_t nvr, 
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::SetInteger(const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[])
+fmi2Status COSMPDummyFunction::SetInteger(const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[])
 {
     fmi_verbose_log("fmi2SetInteger(...)");
     for (size_t i = 0; i<nvr; i++) {
@@ -665,7 +611,7 @@ fmi2Status COSMPDummySensor::SetInteger(const fmi2ValueReference vr[], size_t nv
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::SetBoolean(const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[])
+fmi2Status COSMPDummyFunction::SetBoolean(const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[])
 {
     fmi_verbose_log("fmi2SetBoolean(...)");
     for (size_t i = 0; i<nvr; i++) {
@@ -677,7 +623,7 @@ fmi2Status COSMPDummySensor::SetBoolean(const fmi2ValueReference vr[], size_t nv
     return fmi2OK;
 }
 
-fmi2Status COSMPDummySensor::SetString(const fmi2ValueReference vr[], size_t nvr, const fmi2String value[])
+fmi2Status COSMPDummyFunction::SetString(const fmi2ValueReference vr[], size_t nvr, const fmi2String value[])
 {
     fmi_verbose_log("fmi2SetString(...)");
     for (size_t i = 0; i<nvr; i++) {
@@ -707,7 +653,7 @@ extern "C" {
 
     FMI2_Export fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nCategories, const fmi2String categories[])
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->SetDebugLogging(loggingOn, nCategories, categories);
     }
 
@@ -722,7 +668,7 @@ extern "C" {
         fmi2Boolean visible,
         fmi2Boolean loggingOn)
     {
-        return COSMPDummySensor::Instantiate(instanceName, fmuType, fmuGUID, fmuResourceLocation, functions, visible, loggingOn);
+        return COSMPDummyFunction::Instantiate(instanceName, fmuType, fmuGUID, fmuResourceLocation, functions, visible, loggingOn);
     }
 
     FMI2_Export fmi2Status fmi2SetupExperiment(fmi2Component c,
@@ -732,19 +678,19 @@ extern "C" {
         fmi2Boolean stopTimeDefined,
         fmi2Real stopTime)
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->SetupExperiment(toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime);
     }
 
     FMI2_Export fmi2Status fmi2EnterInitializationMode(fmi2Component c)
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->EnterInitializationMode();
     }
 
     FMI2_Export fmi2Status fmi2ExitInitializationMode(fmi2Component c)
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->ExitInitializationMode();
     }
 
@@ -753,25 +699,25 @@ extern "C" {
         fmi2Real communicationStepSize,
         fmi2Boolean noSetFMUStatePriorToCurrentPointfmi2Component)
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->DoStep(currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPointfmi2Component);
     }
 
     FMI2_Export fmi2Status fmi2Terminate(fmi2Component c)
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->Terminate();
     }
 
     FMI2_Export fmi2Status fmi2Reset(fmi2Component c)
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->Reset();
     }
 
     FMI2_Export void fmi2FreeInstance(fmi2Component c)
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         myc->FreeInstance();
         delete myc;
     }
@@ -781,49 +727,49 @@ extern "C" {
      */
     FMI2_Export fmi2Status fmi2GetReal(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[])
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->GetReal(vr, nvr, value);
     }
 
     FMI2_Export fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[])
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->GetInteger(vr, nvr, value);
     }
 
     FMI2_Export fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[])
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->GetBoolean(vr, nvr, value);
     }
 
     FMI2_Export fmi2Status fmi2GetString(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[])
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->GetString(vr, nvr, value);
     }
 
     FMI2_Export fmi2Status fmi2SetReal(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[])
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->SetReal(vr, nvr, value);
     }
 
     FMI2_Export fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[])
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->SetInteger(vr, nvr, value);
     }
 
     FMI2_Export fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[])
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->SetBoolean(vr, nvr, value);
     }
 
     FMI2_Export fmi2Status fmi2SetString(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[])
     {
-        COSMPDummySensor* myc = (COSMPDummySensor*)c;
+        COSMPDummyFunction* myc = (COSMPDummyFunction*)c;
         return myc->SetString(vr, nvr, value);
     }
 
